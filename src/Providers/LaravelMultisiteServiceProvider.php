@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Gingerminds\LaravelMultisite\Providers;
 
 use ApiPlatform\State\ProviderInterface;
+use Gingerminds\LaravelMultisite\Http\Middleware\ResolveSiteContext;
+use Gingerminds\LaravelMultisite\Services\Context\SiteContext;
+use Illuminate\Foundation\Http\Kernel;
 use Illuminate\Support\ServiceProvider;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -35,10 +38,18 @@ class LaravelMultisiteServiceProvider extends ServiceProvider
         if ($toTag !== []) {
             $this->app->tag($toTag, ProviderInterface::class);
         }
+
+        $this->app->scoped(SiteContext::class);
     }
 
     public function boot(): void
     {
+        $kernel = $this->app->make(Kernel::class);
+
+        $kernel->prependMiddleware(
+            ResolveSiteContext::class
+        );
+
         // Chargement des routes du package
         if (! $this->app->routesAreCached()) {
             $this->loadRoutesFrom(__DIR__ . '/../../routes/web.php');
