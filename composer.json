@@ -5,13 +5,8 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Gingerminds\\LaravelMultisite\\": "src/",
-            "Gingerminds\\LaravelMultisite\\Database\\Factories\\": "src/Database/Factories/",
-            "Gingerminds\\LaravelMultisite\\Database\\Seeders\\": "database/seeders/"
-        },
-        "files": [
-            "src/helpers.php"
-        ]
+            "Gingerminds\\LaravelMultisite\\": "src/"
+        }
     },
     "authors": [
         {
@@ -20,7 +15,7 @@
     ],
     "require": {
         "php": "^8.3",
-        "gingerminds/laravel-core": "^3.0",
+        "gingerminds/laravel-core": "^3.0"
     },
     "require-dev": {
         "larastan/larastan": "^3.8",
@@ -34,7 +29,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Gingerminds\\LaravelMultisite\\Providers\\LaravelMultisiteServiceProvider",
+                "Gingerminds\\LaravelMultisite\\Providers\\LaravelMultisiteServiceProvider"
             ]
         }
     }
