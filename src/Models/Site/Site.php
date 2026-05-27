@@ -12,6 +12,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use Gingerminds\LaravelCore\Models\ResourceModelInterface;
+use Gingerminds\LaravelCore\Models\SortableModelInterface;
 use Gingerminds\LaravelMultisite\ApiProvider\Site\SiteProvider;
 use Gingerminds\LaravelMultisite\StateProcessor\Site\SiteStateProcessor;
 use Illuminate\Database\Eloquent\Model;
@@ -52,7 +53,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
         Site::GROUP_READ,
     ])
 )]
-class Site extends Model implements ResourceModelInterface
+class Site extends Model implements ResourceModelInterface, SortableModelInterface
 {
     public const string GROUP_LIST = 'sites:list';
     public const string GROUP_READ = 'sites:read';

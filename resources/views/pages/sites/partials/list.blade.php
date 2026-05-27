@@ -5,7 +5,7 @@
         <td class="text-end">
             <div class="btn-group" role="group">
                 <a class="btn btn-sm btn-outline-primary" href="{{ route('gingerminds-multisite.sites.edit', $site) }}">
-                    <i class="bx bx-edit"></i>
+                    <i class="bi bi-pencil-square"></i>
                 </a>
                 <button type="button"
                         class="btn btn-outline-danger btn-sm js-remove-item"
@@ -15,7 +15,7 @@
                         data-remove-name="{{ $site->code ?? $site->id }}"
                         data-destroy-url="{{ route('gingerminds-multisite.sites.destroy', $site) }}"
                 >
-                    <i class="bx bx-trash"></i>
+                    <i class="bi bi-trash"></i>
                 </button>
             </div>
         </td>

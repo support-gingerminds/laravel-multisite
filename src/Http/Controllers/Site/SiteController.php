@@ -43,7 +43,7 @@ class SiteController extends AbstractController
 
     public function edit(Site $site): View
     {
- /** @var view-string $view */
+        /** @var view-string $view */
         $view = 'gingerminds-multisite::pages.sites.edit';
         return view($view, ['site' => $site]);
     }
