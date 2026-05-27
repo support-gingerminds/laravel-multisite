@@ -1,14 +1,15 @@
 <?php
 
-namespace Gingerminds\LaravelCore\Providers;
+declare(strict_types=1);
+
+namespace Gingerminds\LaravelMultisite\Providers;
 
 use Illuminate\Support\ServiceProvider;
 
-class LaravelCoreServiceProvider extends ServiceProvider
+class LaravelMultisiteServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-
     }
 
     public function boot(): void
