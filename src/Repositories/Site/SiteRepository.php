@@ -35,6 +35,48 @@ class SiteRepository extends AbstractRepository implements RepositoryInterface
         $resourceModel->fill($request->all());
         $resourceModel->save();
 
+        $this->syncLanguages($resourceModel, $request->all());
+
         return $resourceModel;
+    }
+
+    /**
+     * @param array<mixed> $data
+     */
+    private function syncLanguages(Site $site, array $data): void
+    {
+        if (!array_key_exists('languages', $data)) {
+            return;
+        }
+
+        $languages = $data['languages'] ?? [];
+
+        if (empty($languages)) {
+            $site->languages()->detach();
+            return;
+        }
+
+        $defaults = array_filter($languages, fn ($l) => (bool)($l['is_default'] ?? false));
+        if (count($defaults) > 1) {
+            throw new InvalidArgumentException('Only one language can be set as default.');
+        }
+
+        /**
+         * @var array<int, array{
+         *     id: int|string,
+         *     is_default?: bool
+         * }> $languages
+         */
+        $sync = collect($languages)
+            ->mapWithKeys(
+                fn (array $l): array => [
+                    $l['id'] => [
+                        'is_default' => (bool)($l['is_default'] ?? false),
+                    ],
+                ]
+            )
+            ->all();
+
+        $site->languages()->sync($sync);
     }
 }

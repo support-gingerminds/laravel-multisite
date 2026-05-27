@@ -4,6 +4,7 @@ return [
     'form' => [
         'url' => 'Domain',
         'iso' => 'ISO Code',
+        'default_language' => 'Default language'
     ],
     'sites' => [
         'manage' => 'Manage sites',

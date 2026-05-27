@@ -4,6 +4,7 @@ namespace Gingerminds\LaravelMultisite\Http\Controllers\Site;
 
 use Gingerminds\LaravelCore\Http\Controllers\AbstractController;
 use Gingerminds\LaravelMultisite\Http\Requests\Site\SiteRequest;
+use Gingerminds\LaravelMultisite\Models\Language\Language;
 use Gingerminds\LaravelMultisite\Models\Site\Site;
 use Gingerminds\LaravelMultisite\Repositories\Site\SiteRepository;
 use Illuminate\Contracts\View\Factory;
@@ -16,7 +17,7 @@ class SiteController extends AbstractController
     public const string LABEL_S = 'gingerminds-multisite::translation.sites.name_s';
 
     public function __construct(
-        private readonly SiteRepository $repository
+        private readonly SiteRepository $repository,
     ) {
     }
 
@@ -36,16 +37,20 @@ class SiteController extends AbstractController
 
     public function create(): View
     {
+        $languages = Language::all();
+
         /** @var view-string $view */
         $view = 'gingerminds-multisite::pages.sites.create';
-        return view($view);
+        return view($view, ['languages' => $languages]);
     }
 
     public function edit(Site $site): View
     {
+        $languages = Language::all();
+
         /** @var view-string $view */
         $view = 'gingerminds-multisite::pages.sites.edit';
-        return view($view, ['site' => $site]);
+        return view($view, ['site' => $site, 'languages' => $languages]);
     }
 
     public function store(SiteRequest $request): RedirectResponse

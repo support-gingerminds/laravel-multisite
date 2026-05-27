@@ -14,6 +14,7 @@ use ApiPlatform\Metadata\Post;
 use Gingerminds\LaravelCore\Models\ResourceModelInterface;
 use Gingerminds\LaravelCore\Models\SortableModelInterface;
 use Gingerminds\LaravelMultisite\ApiProvider\Language\LanguageProvider;
+use Gingerminds\LaravelMultisite\Models\Site\Site;
 use Gingerminds\LaravelMultisite\StateProcessor\Language\LanguageStateProcessor;
 use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -51,6 +52,23 @@ use Symfony\Component\Serializer\Attribute\Groups;
     serialize: new Groups([
         Language::GROUP_LIST,
         Language::GROUP_READ,
+        Site::GROUP_READ,
+    ])
+)]
+#[ApiProperty(
+    property: 'iso',
+    serialize: new Groups([
+        Language::GROUP_LIST,
+        Language::GROUP_READ,
+        Site::GROUP_READ,
+    ])
+)]
+#[ApiProperty(
+    property: 'label',
+    serialize: new Groups([
+        Language::GROUP_LIST,
+        Language::GROUP_READ,
+        Site::GROUP_READ,
     ])
 )]
 class Language extends Model implements ResourceModelInterface, SortableModelInterface
