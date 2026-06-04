@@ -13,7 +13,7 @@ class LanguageRequest extends FormRequest implements FormRequestInterface
     public function rules(): array
     {
         return [
-            'iso'   => 'required|string|max:255',
+            'iso'   => 'required|string|max:7',
             'label' => 'required|string|max:255',
         ];
     }
