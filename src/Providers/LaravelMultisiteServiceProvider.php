@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Gingerminds\LaravelMultisite\Providers;
 
 use ApiPlatform\State\ProviderInterface;
-use Gingerminds\LaravelMultisite\Http\Middleware\ResolveSiteContext;
+use Gingerminds\LaravelMultisite\Http\Middleware\Context\ResolveLanguageContext;
+use Gingerminds\LaravelMultisite\Http\Middleware\Context\ResolveSiteContext;
+use Gingerminds\LaravelMultisite\Services\Context\LanguageContext;
 use Gingerminds\LaravelMultisite\Services\Context\SiteContext;
 use Illuminate\Foundation\Http\Kernel;
 use Illuminate\Support\ServiceProvider;
@@ -40,6 +42,7 @@ class LaravelMultisiteServiceProvider extends ServiceProvider
         }
 
         $this->app->scoped(SiteContext::class);
+        $this->app->scoped(LanguageContext::class);
     }
 
     public function boot(): void
@@ -48,6 +51,10 @@ class LaravelMultisiteServiceProvider extends ServiceProvider
 
         $kernel->prependMiddleware(
             ResolveSiteContext::class
+        );
+
+        $kernel->prependMiddleware(
+            ResolveLanguageContext::class,
         );
 
         // Chargement des routes du package

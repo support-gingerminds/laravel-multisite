@@ -5,6 +5,7 @@ namespace Gingerminds\LaravelMultisite\Models\Site;
 use Gingerminds\LaravelMultisite\Services\Context\SiteContext;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Throwable;
 
 trait SiteContextedModelTrait
 {
@@ -18,6 +19,25 @@ trait SiteContextedModelTrait
             $siteId = app(SiteContext::class)->id();
 
             if (!$siteId) {
+                try {
+                    $siteId = request()->header('X-Site-Id');
+
+                    if (!$siteId) {
+                        $host = request()->getHost();
+                        $site   = Site::where('url', 'LIKE', '%' . $host . '%')->first();
+                        $siteId = $site?->id;
+                    }
+
+                    if (!$siteId) {
+                        $siteId = Site::value('id');
+                    }
+                } catch (Throwable) {
+                    $siteId = null;
+                }
+            }
+
+            if (!$siteId) {
+                $builder->whereRaw('1 = 0');
                 return;
             }
 

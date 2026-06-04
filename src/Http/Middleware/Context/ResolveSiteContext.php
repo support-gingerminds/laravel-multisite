@@ -1,6 +1,6 @@
 <?php
 
-namespace Gingerminds\LaravelMultisite\Http\Middleware;
+namespace Gingerminds\LaravelMultisite\Http\Middleware\Context;
 
 use Closure;
 use Gingerminds\LaravelMultisite\Models\Site\Site;
@@ -25,7 +25,7 @@ class ResolveSiteContext
 
     protected function resolveSite(Request $request): ?Site
     {
-        if ($siteId = $request->session()->get('admin_site_id')) {
+        if ($request->hasSession() && ($siteId = $request->session()->get('admin_site_id'))) {
             return Site::query()
                 ->whereKey($siteId)
                 ->first();
@@ -34,18 +34,23 @@ class ResolveSiteContext
         if ($siteId = $request->header('X-Site-Id')) {
             return Site::query()
                 ->whereKey($siteId)
-                ->where('domain', $request->getHost())
                 ->first();
         }
 
         $site = Site::query()
-            ->where('domain', $request->getHost())
+            ->where('url', 'LIKE', '%' . $request->getHost() . '%')
             ->first();
 
         if ($site) {
             return $site;
         }
 
-        return Site::query()->first();
+        $site = Site::query()->first();
+
+        if ($site) {
+            return $site;
+        }
+
+        return null;
     }
 }

@@ -19,6 +19,9 @@ use Gingerminds\LaravelMultisite\StateProcessor\Language\LanguageStateProcessor;
 use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\Serializer\Attribute\Groups;
 
+/**
+ * @property string $iso
+**/
 #[ApiResource(
     operations: [
         new GetCollection(
