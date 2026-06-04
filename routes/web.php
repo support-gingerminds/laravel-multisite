@@ -7,6 +7,7 @@ use Gingerminds\LaravelMultisite\Http\Controllers\Site\SiteController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('web')
+    ->prefix(config('gingerminds-core.admin_prefix'))
     ->name('gingerminds-multisite.')
     ->group(function () {
         Route::resource('sites', SiteController::class);
