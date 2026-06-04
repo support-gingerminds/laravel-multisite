@@ -52,7 +52,7 @@ class ResolveLanguageContext
 
     protected function isAdminRequest(Request $request): bool
     {
-        return str_starts_with($request->path(), 'admin');
+        return str_starts_with($request->path(), config('gingerminds-core.admin_prefix'));
     }
 
     protected function resolveLanguage(Request $request, Site $site, ?Language $fallback): ?Language
