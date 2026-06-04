@@ -12,7 +12,7 @@ return new class () extends Migration {
     {
         Schema::create('languages', function (Blueprint $table) {
             $table->id();
-            $table->string('iso')->unique();
+            $table->string('iso', 7)->unique();
             $table->string('label');
             $table->timestamps();
         });
