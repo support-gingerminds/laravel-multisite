@@ -6,16 +6,11 @@ namespace Gingerminds\LaravelMultisite\Models\Site;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Patch;
-use ApiPlatform\Metadata\Post;
 use Gingerminds\LaravelCore\Models\ResourceModelInterface;
 use Gingerminds\LaravelCore\Models\SortableModelInterface;
 use Gingerminds\LaravelMultisite\ApiProvider\Site\SiteProvider;
 use Gingerminds\LaravelMultisite\Models\Language\Language;
-use Gingerminds\LaravelMultisite\StateProcessor\Site\SiteStateProcessor;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -25,25 +20,6 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new GetCollection(
             normalizationContext: ['groups' => [Site::GROUP_LIST]],
             provider: SiteProvider::class
-        ),
-        new Get(
-            normalizationContext: ['groups' => [Site::GROUP_READ]],
-            provider: SiteProvider::class
-        ),
-        new Post(
-            normalizationContext: ['groups' => [Site::GROUP_READ]],
-            denormalizationContext: ['groups' => [Site::GROUP_EDIT]],
-            deserialize: false,
-            provider: SiteProvider::class,
-            processor: SiteStateProcessor::class,
-        ),
-        new Delete(),
-        new Patch(
-            normalizationContext: ['groups' => [Site::GROUP_READ]],
-            denormalizationContext: ['groups' => [Site::GROUP_EDIT]],
-            deserialize: false,
-            provider: SiteProvider::class,
-            processor: SiteStateProcessor::class,
         ),
     ],
 )]
