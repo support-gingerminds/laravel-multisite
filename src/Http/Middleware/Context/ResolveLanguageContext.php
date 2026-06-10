@@ -23,27 +23,28 @@ class ResolveLanguageContext
         }
 
         /** @var Language|null $defaultLanguage */
-        $defaultLanguage = $site->languages()->wherePivot('is_default', true)->first();
+        $defaultLanguage = $site->languages()->wherePivot('is_default', true)->first()
+            ?? $site->languages()->first();
 
-        if (!$defaultLanguage) {
-            $defaultLanguage = $site->languages()->first();
+        if ($this->isAdminRequest($request)) {
+            return $next($request);
         }
 
-        $language = $this->isAdminRequest($request) ? $defaultLanguage : $this->resolveLanguage(
+        $language = $this->resolveLanguage(
             request: $request,
             site: $site,
             fallback: $defaultLanguage,
         );
 
         $context = app(LanguageContext::class);
-        if ($language) {
+        if ($language instanceof Language) {
             $context->setCurrent($language);
         }
         if ($defaultLanguage) {
             $context->setFallback($defaultLanguage);
         }
 
-        if ($language) {
+        if ($language instanceof Language) {
             app()->setLocale($language->iso);
         }
 
@@ -65,9 +66,8 @@ class ResolveLanguageContext
 
         $requestedLocales = collect(explode(',', $header))
             ->map(fn ($locale) => trim(explode(';', $locale)[0]))
-            ->map(
-                fn ($locale) => strtolower(explode('-', $locale)[0])
-            );
+            ->map(fn ($locale) => strtolower(explode('-', $locale)[0]))
+            ->filter();
 
         foreach ($requestedLocales as $locale) {
             /** @var Language|null $language */
@@ -77,6 +77,6 @@ class ResolveLanguageContext
             }
         }
 
-        return $fallback;
+        abort(400, 'Unsupported language');
     }
 }
