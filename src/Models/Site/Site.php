@@ -73,10 +73,16 @@ class Site extends Model implements ResourceModelInterface, SortableModelInterfa
     public const string GROUP_READ = 'sites:read';
     public const string GROUP_EDIT = 'sites:edit';
 
-    protected $fillable = [
-        'code',
-        'url',
-    ];
+    /**
+     * @return string[]
+     */
+    public function getFillable(): array
+    {
+        return [
+            'code',
+            'url',
+        ];
+    }
 
     /**
      * @return BelongsToMany<Language, $this>
