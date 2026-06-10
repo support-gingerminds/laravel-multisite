@@ -60,6 +60,13 @@ use Symfony\Component\Serializer\Attribute\Groups;
         Site::GROUP_READ,
     ])
 )]
+#[ApiProperty(
+    property: 'languages',
+    serialize: new Groups([
+        Site::GROUP_LIST,
+        Site::GROUP_READ,
+    ])
+)]
 class Site extends Model implements ResourceModelInterface, SortableModelInterface
 {
     public const string GROUP_LIST = 'sites:list';
