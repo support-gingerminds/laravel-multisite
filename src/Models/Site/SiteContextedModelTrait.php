@@ -23,7 +23,7 @@ trait SiteContextedModelTrait
                     $siteId = request()->header('X-Site-Id');
 
                     if (!$siteId) {
-                        $host = request()->getHost();
+                        $host   = request()->getHost();
                         $site   = Site::where('url', 'LIKE', '%' . $host . '%')->first();
                         $siteId = $site?->id;
                     }
