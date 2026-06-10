@@ -31,6 +31,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     serialize: new Groups([
         Language::GROUP_LIST,
         Language::GROUP_READ,
+        Site::GROUP_LIST,
         Site::GROUP_READ,
     ])
 )]
@@ -39,6 +40,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     serialize: new Groups([
         Language::GROUP_LIST,
         Language::GROUP_READ,
+        Site::GROUP_LIST,
         Site::GROUP_READ,
     ])
 )]
@@ -47,6 +49,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     serialize: new Groups([
         Language::GROUP_LIST,
         Language::GROUP_READ,
+        Site::GROUP_LIST,
         Site::GROUP_READ,
     ])
 )]
@@ -54,8 +57,6 @@ class Language extends Model implements ResourceModelInterface, SortableModelInt
 {
     public const string GROUP_LIST = 'languages:list';
     public const string GROUP_READ = 'languages:read';
-    public const string GROUP_EDIT = 'languages:edit';
-
     protected $fillable = [
         'iso',
         'label',
