@@ -23,31 +23,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
  * @property string $iso
 **/
 #[ApiResource(
-    operations: [
-        new GetCollection(
-            normalizationContext: ['groups' => [Language::GROUP_LIST]],
-            provider: LanguageProvider::class
-        ),
-        new Get(
-            normalizationContext: ['groups' => [Language::GROUP_READ]],
-            provider: LanguageProvider::class
-        ),
-        new Post(
-            normalizationContext: ['groups' => [Language::GROUP_READ]],
-            denormalizationContext: ['groups' => [Language::GROUP_EDIT]],
-            deserialize: false,
-            provider: LanguageProvider::class,
-            processor: LanguageStateProcessor::class
-        ),
-        new Delete(),
-        new Patch(
-            normalizationContext: ['groups' => [Language::GROUP_READ]],
-            denormalizationContext: ['groups' => [Language::GROUP_EDIT]],
-            deserialize: false,
-            provider: LanguageProvider::class,
-            processor: LanguageStateProcessor::class
-        ),
-    ],
+    operations: [],
 )]
 #[ApiProperty(
     identifier: true,
