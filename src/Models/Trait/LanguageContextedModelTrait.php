@@ -15,16 +15,17 @@ trait LanguageContextedModelTrait
     protected static function bootLanguageContextedModelTrait(): void
     {
         static::addGlobalScope('language', function (Builder $builder) {
-            $languageId = (new static())->resolveCurrentLanguageId();
+            if (!app()->bound(LanguageContext::class)) {
+                return;
+            }
+
+            $languageId = app(LanguageContext::class)->current()?->id;
 
             if ($languageId === null) {
                 return;
             }
 
-            $builder->where(
-                'language_id',
-                $languageId
-            );
+            $builder->where('language_id', (int) $languageId);
         });
     }
 
