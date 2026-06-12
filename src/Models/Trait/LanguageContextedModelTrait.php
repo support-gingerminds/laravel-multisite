@@ -15,13 +15,46 @@ trait LanguageContextedModelTrait
     protected static function bootLanguageContextedModelTrait(): void
     {
         static::addGlobalScope('language', function (Builder $builder) {
-            if (!app()->bound(LanguageContext::class)) {
-                return;
+
+            $languageId = null;
+
+            if (app()->bound(LanguageContext::class)) {
+                $languageId = app(LanguageContext::class)->current()?->id;
             }
 
-            $languageId = app(LanguageContext::class)->current()?->id;
+            if (!$languageId) {
+                try {
+                    $header = request()->header('Accept-Language');
 
-            if ($languageId === null) {
+                    if ($header) {
+                        $requestedLocales = collect(explode(',', $header))
+                            ->map(fn ($locale) => trim(explode(';', $locale)[0]))
+                            ->map(fn ($locale) => strtolower(explode('-', $locale)[0]))
+                            ->filter()
+                            ->values();
+
+                        if ($requestedLocales->isNotEmpty()) {
+
+                            $languages = Language::query()
+                                ->whereIn('iso', $requestedLocales->all())
+                                ->get(['id', 'iso'])
+                                ->keyBy(fn ($l) => strtolower($l->iso));
+
+                            foreach ($requestedLocales as $iso) {
+                                $lang = $languages->get($iso);
+
+                                if ($lang) {
+                                    $languageId = (int) $lang->id;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                } catch (Throwable) {
+                }
+            }
+
+            if (!$languageId) {
                 return;
             }
 
@@ -34,6 +67,9 @@ trait LanguageContextedModelTrait
         return $this->belongsTo(Language::class);
     }
 
+    /**
+     * Public resolver (safe reuse outside scope)
+     */
     protected function resolveCurrentLanguageId(): ?int
     {
         if (app()->bound(LanguageContext::class)) {
@@ -43,45 +79,27 @@ trait LanguageContextedModelTrait
             }
         }
 
-        $ids = $this->resolveLanguageIdsFromHeader();
-        return $ids[0] ?? null;
-    }
-
-    protected function resolveLanguageIdsFromHeader(): array
-    {
         try {
             $header = request()->header('Accept-Language');
-        } catch (Throwable) {
-            $header = null;
-        }
 
-        if (!$header) {
-            return [];
-        }
-
-        $requestedLocales = collect(explode(',', $header))
-            ->map(fn ($locale) => trim(explode(';', $locale)[0]))
-            ->map(fn ($locale) => strtolower(explode('-', $locale)[0]))
-            ->filter()
-            ->values();
-
-        if ($requestedLocales->isEmpty()) {
-            return [];
-        }
-
-        $languages = Language::query()
-            ->whereIn('iso', $requestedLocales->all())
-            ->get(['id', 'iso'])
-            ->keyBy(fn ($l) => strtolower($l->iso));
-
-        $ids = [];
-        foreach ($requestedLocales as $iso) {
-            $lang = $languages->get($iso);
-            if ($lang) {
-                $ids[] = (int) $lang->id;
+            if (!$header) {
+                return null;
             }
-        }
 
-        return array_values(array_unique($ids));
+            $requestedLocales = collect(explode(',', $header))
+                ->map(fn ($locale) => trim(explode(';', $locale)[0]))
+                ->map(fn ($locale) => strtolower(explode('-', $locale)[0]))
+                ->filter();
+
+            if ($requestedLocales->isEmpty()) {
+                return null;
+            }
+
+            return Language::query()
+                ->whereIn('iso', $requestedLocales->all())
+                ->value('id');
+        } catch (Throwable) {
+            return null;
+        }
     }
 }
