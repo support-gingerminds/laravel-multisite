@@ -34,7 +34,6 @@ trait LanguageContextedModelTrait
                             ->values();
 
                         if ($requestedLocales->isNotEmpty()) {
-
                             $languages = Language::query()
                                 ->whereIn('iso', $requestedLocales->all())
                                 ->get(['id', 'iso'])
