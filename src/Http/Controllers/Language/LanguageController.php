@@ -6,6 +6,7 @@ use Gingerminds\LaravelCore\Http\Controllers\AbstractController;
 use Gingerminds\LaravelMultisite\Http\Requests\Language\LanguageRequest;
 use Gingerminds\LaravelMultisite\Models\Language\Language;
 use Gingerminds\LaravelMultisite\Repositories\Language\LanguageRepository;
+use Gingerminds\LaravelMultisite\Resolver\ResourceResolver;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -22,14 +23,14 @@ class LanguageController extends AbstractController
 
     public function index(Request $request): Factory|View
     {
-        $this->authorize('viewAny', Language::class);
+        $this->authorize('viewAny', ResourceResolver::model('language'));
 
         $items = $this->repository->get($request);
 
         /** @var view-string $view */
         $view = 'gingerminds-multisite::pages.languages.index';
         return view($view, [
-            'resource' => Language::class,
+            'resource' => ResourceResolver::model('language'),
             'items'    => $items,
         ]);
     }
@@ -50,7 +51,7 @@ class LanguageController extends AbstractController
 
     public function store(LanguageRequest $request): RedirectResponse
     {
-        $this->authorize('create', Language::class);
+        $this->authorize('create', ResourceResolver::model('language'));
 
         /** @var Language $language */
         $language = $this->repository->update($request, new Language());
