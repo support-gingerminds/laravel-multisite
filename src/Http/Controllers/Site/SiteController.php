@@ -7,6 +7,7 @@ use Gingerminds\LaravelMultisite\Http\Requests\Site\SiteRequest;
 use Gingerminds\LaravelMultisite\Models\Language\Language;
 use Gingerminds\LaravelMultisite\Models\Site\Site;
 use Gingerminds\LaravelMultisite\Repositories\Site\SiteRepository;
+use Gingerminds\LaravelMultisite\Resolver\ResourceResolver;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -23,14 +24,14 @@ class SiteController extends AbstractController
 
     public function index(Request $request): Factory|View
     {
-        $this->authorize('viewAny', Site::class);
+        $this->authorize('viewAny', ResourceResolver::model('site'));
 
         $items = $this->repository->get($request);
 
         /** @var view-string $view */
         $view = 'gingerminds-multisite::pages.sites.index';
         return view($view, [
-            'resource' => Site::class,
+            'resource' => ResourceResolver::model('site'),
             'items'    => $items,
         ]);
     }
@@ -55,7 +56,7 @@ class SiteController extends AbstractController
 
     public function store(SiteRequest $request): RedirectResponse
     {
-        $this->authorize('create', Site::class);
+        $this->authorize('create', ResourceResolver::model('site'));
 
         /** @var Site $site */
         $site = $this->repository->update($request, new Site());
