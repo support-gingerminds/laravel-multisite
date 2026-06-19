@@ -1,6 +1,9 @@
 <?php
 
 return [
+    'menu' => [
+        'translations' => 'Translations',
+    ],
     'form' => [
         'url' => 'Domain',
         'iso' => 'ISO Code',

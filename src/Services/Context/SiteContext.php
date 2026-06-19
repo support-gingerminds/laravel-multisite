@@ -1,30 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Gingerminds\LaravelMultisite\Services\Context;
 
+use Gingerminds\LaravelMultisite\Http\Middleware\Context\SiteContextResolver;
 use Gingerminds\LaravelMultisite\Models\Site\Site;
+use Illuminate\Http\Request;
 
 class SiteContext
 {
-    protected ?Site $site = null;
+    private ?Site $site = null;
 
-    public function set(Site $site): void
-    {
-        $this->site = $site;
+    public function __construct(
+        private readonly SiteContextResolver $resolver,
+        private readonly Request $request,
+    ) {
     }
 
     public function site(): ?Site
     {
-        return $this->site;
-    }
+        if ($this->site instanceof Site) {
+            return $this->site;
+        }
 
-    public function id(): ?int
-    {
-        return $this->site?->id;
-    }
-
-    public function has(): bool
-    {
-        return $this->site instanceof Site;
+        return $this->site = $this->resolver->resolve($this->request);
     }
 }

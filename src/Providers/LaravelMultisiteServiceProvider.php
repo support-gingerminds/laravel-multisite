@@ -5,11 +5,23 @@ declare(strict_types=1);
 namespace Gingerminds\LaravelMultisite\Providers;
 
 use ApiPlatform\State\ProviderInterface;
-use Gingerminds\LaravelMultisite\Http\Middleware\Context\ResolveLanguageContext;
-use Gingerminds\LaravelMultisite\Http\Middleware\Context\ResolveSiteContext;
+use Gingerminds\LaravelMultisite\ApiProvider\Language\LanguageProvider;
+use Gingerminds\LaravelMultisite\ApiProvider\Site\SiteProvider;
+use Gingerminds\LaravelMultisite\Http\Controllers\Language\LanguageController;
+use Gingerminds\LaravelMultisite\Http\Controllers\Site\SiteController;
+use Gingerminds\LaravelMultisite\Http\Middleware\Context\LanguageContextResolver;
+use Gingerminds\LaravelMultisite\Http\Middleware\Context\SiteContextResolver;
+use Gingerminds\LaravelMultisite\Http\Requests\Language\LanguageRequest;
+use Gingerminds\LaravelMultisite\Http\Requests\Site\SiteRequest;
+use Gingerminds\LaravelMultisite\Models\Language\Language;
+use Gingerminds\LaravelMultisite\Models\Site\Site;
+use Gingerminds\LaravelMultisite\Repositories\Language\LanguageRepository;
+use Gingerminds\LaravelMultisite\Repositories\Site\SiteRepository;
+use Gingerminds\LaravelMultisite\Resolver\ResourceResolver;
 use Gingerminds\LaravelMultisite\Services\Context\LanguageContext;
 use Gingerminds\LaravelMultisite\Services\Context\SiteContext;
-use Illuminate\Foundation\Http\Kernel;
+use Gingerminds\LaravelMultisite\StateProcessor\Site\SiteStateProcessor;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -19,6 +31,57 @@ class LaravelMultisiteServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->register(LaravelMultisiteAuthServiceProvider::class);
+
+        $this->app->bind(
+            LanguageController::class,
+            ResourceResolver::controller('language')
+        );
+        $this->app->bind(
+            LanguageRepository::class,
+            ResourceResolver::repository('language')
+        );
+        $this->app->bind(
+            Language::class,
+            ResourceResolver::model('language')
+        );
+        $this->app->bind(
+            LanguageRequest::class,
+            ResourceResolver::request('language')
+        );
+        $this->app->bind(
+            LanguageProvider::class,
+            ResourceResolver::provider('language')
+        );
+
+        $this->app->bind(
+            SiteController::class,
+            ResourceResolver::controller('site')
+        );
+        $this->app->bind(
+            SiteRepository::class,
+            ResourceResolver::repository('site')
+        );
+        $this->app->bind(
+            Site::class,
+            ResourceResolver::model('site')
+        );
+        $this->app->bind(
+            SiteRequest::class,
+            ResourceResolver::request('site')
+        );
+        $this->app->bind(
+            SiteProvider::class,
+            ResourceResolver::provider('site')
+        );
+        $this->app->bind(
+            SiteStateProcessor::class,
+            ResourceResolver::stateProcessor('site')
+        );
+
+        $this->mergeConfigFrom(
+            __DIR__ . '/../../config/gingerminds-multisite.php',
+            'gingerminds-multisite'
+        );
 
         $providerPath = __DIR__ . '/../ApiProvider';
         $iterator     = new RecursiveIteratorIterator(
@@ -40,22 +103,17 @@ class LaravelMultisiteServiceProvider extends ServiceProvider
         if ($toTag !== []) {
             $this->app->tag($toTag, ProviderInterface::class);
         }
-
-        $this->app->scoped(SiteContext::class);
-        $this->app->scoped(LanguageContext::class);
     }
 
     public function boot(): void
     {
-        $kernel = $this->app->make(Kernel::class);
+        $this->app->scoped(SiteContext::class);
+        $this->app->singleton(SiteContextResolver::class);
 
-        $kernel->prependMiddleware(
-            ResolveSiteContext::class
-        );
+        $this->app->scoped(LanguageContext::class);
+        $this->app->singleton(LanguageContextResolver::class);
 
-        $kernel->prependMiddleware(
-            ResolveLanguageContext::class,
-        );
+        Route::model('site', ResourceResolver::model('site'));
 
         // Chargement des routes du package
         if (! $this->app->routesAreCached()) {

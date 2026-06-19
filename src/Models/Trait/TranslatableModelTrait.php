@@ -20,7 +20,7 @@ trait TranslatableModelTrait
     protected static function bootTranslatableModelTrait(): void
     {
         static::addGlobalScope('translations', function (Builder $builder) {
-            $builder->with('translations');
+            $builder->with(['translations', 'currentTranslation']);
         });
     }
 
@@ -212,5 +212,15 @@ trait TranslatableModelTrait
         }
 
         return static::class . 'Translation';
+    }
+
+    public function syncTranslations(array $translations): void
+    {
+        foreach ($translations as $languageId => $fields) {
+            $this->translations()->updateOrCreate(
+                ['language_id' => $languageId],
+                $fields
+            );
+        }
     }
 }
