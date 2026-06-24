@@ -112,10 +112,14 @@ trait TranslatableModelTrait
         }
 
         // Map requested locales to existing language ids, preserving order
-        $languages = Language::query()
-            ->whereIn('iso', $requestedLocales->all())
-            ->get(['id', 'iso'])
-            ->keyBy(fn ($l) => strtolower($l->iso));
+        try {
+            $languages = Language::query()
+                ->whereIn('iso', $requestedLocales->all())
+                ->get(['id', 'iso'])
+                ->keyBy(fn ($l) => strtolower($l->iso));
+        } catch (Throwable) {
+            return [];
+        }
 
         $ids = [];
         foreach ($requestedLocales as $iso) {
