@@ -16,7 +16,7 @@ trait SiteContextedModelTrait
     {
         static::addGlobalScope('site', function (Builder $builder) {
 
-            $siteId = app(SiteContext::class)->id();
+            $siteId = app(SiteContext::class)->site()?->id;
 
             if (!$siteId) {
                 try {
@@ -56,7 +56,7 @@ trait SiteContextedModelTrait
                 empty($model->site_id)
                 && app(SiteContext::class)->has()
             ) {
-                $model->site_id = app(SiteContext::class)->id();
+                $model->site_id = app(SiteContext::class)->site()?->id;
             }
         });
     }
