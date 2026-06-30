@@ -7,7 +7,6 @@ namespace Gingerminds\LaravelMultisite\Models\Trait;
 use Gingerminds\LaravelMultisite\Models\Language\Language;
 use Gingerminds\LaravelMultisite\Services\Context\LanguageContext;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Throwable;
 
 trait LanguageContextedModelTrait
@@ -57,13 +56,8 @@ trait LanguageContextedModelTrait
                 return;
             }
 
-            $builder->where('language_id', (int) $languageId);
+            $builder->whereHas('languages', fn (Builder $q) => $q->where('languages.id', (int) $languageId));
         });
-    }
-
-    public function language(): BelongsTo
-    {
-        return $this->belongsTo(Language::class);
     }
 
     /**
