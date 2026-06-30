@@ -1,7 +1,8 @@
 @props([
     'languages',
     'translations' => [],
-     'fieldsView' => null,
+    'fieldsView' => null,
+    'defaultLanguage' => null
 ])
 
 @php
@@ -33,6 +34,7 @@
                 @include($fieldsView, [
                     'language' => $language,
                     'translation' => $translation,
+                    'required' => $language->id === $defaultLanguage?->id
                 ])
             @endif
 
