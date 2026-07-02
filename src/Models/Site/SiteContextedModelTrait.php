@@ -9,56 +9,80 @@ use Throwable;
 
 trait SiteContextedModelTrait
 {
+    private const SITE_ID_COLUMN_SUFFIX = '.site_id';
+
     /**
      * Boot trait.
      */
     protected static function bootSiteContextedModelTrait(): void
     {
         static::addGlobalScope('site', function (Builder $builder) {
-
-            $siteId = app(SiteContext::class)->site()?->id;
-
-            if (!$siteId) {
-                try {
-                    $siteId = request()->header('X-Site-Id');
-
-                    if (!$siteId) {
-                        $host   = request()->getHost();
-                        $site   = Site::where('url', 'LIKE', '%' . $host . '%')->first();
-                        $siteId = $site?->id;
-                    }
-
-                    if (!$siteId) {
-                        $siteId = Site::value('id');
-                    }
-                } catch (Throwable) {
-                    $siteId = null;
-                }
-            }
-
-            if (!$siteId) {
-                $builder->whereRaw('1 = 0');
-                return;
-            }
-
-            $table = $builder->getModel()->getTable();
-
-            $builder->where(function (Builder $q) use ($table, $siteId) {
-
-                $q->where($table . '.site_id', $siteId)
-                    ->orWhereNull($table . '.site_id');
-            });
+            static::applySiteScope($builder);
         });
 
         static::creating(function ($model) {
-
-            if (
-                empty($model->site_id)
-                && app(SiteContext::class)->has()
-            ) {
-                $model->site_id = app(SiteContext::class)->site()?->id;
-            }
+            static::assignSiteIdOnCreate($model);
         });
+    }
+
+    /**
+     * Restricts the query to the current site (or sites with no site_id at all).
+     */
+    private static function applySiteScope(Builder $builder): void
+    {
+        $siteId = static::resolveContextSiteId();
+
+        if (!$siteId) {
+            $builder->whereRaw('1 = 0');
+            return;
+        }
+
+        $table = $builder->getModel()->getTable();
+
+        $builder->where(function (Builder $q) use ($table, $siteId) {
+            $q->where($table . self::SITE_ID_COLUMN_SUFFIX, $siteId)
+                ->orWhereNull($table . self::SITE_ID_COLUMN_SUFFIX);
+        });
+    }
+
+    /**
+     * Resolves the site id from the current context, falling back to the
+     * request (header, then host) and finally to any existing site.
+     */
+    private static function resolveContextSiteId(): int|string|null
+    {
+        $siteId = app(SiteContext::class)->site()?->id;
+
+        if ($siteId) {
+            return $siteId;
+        }
+
+        try {
+            return static::resolveSiteIdFromRequest();
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    private static function resolveSiteIdFromRequest(): int|string|null
+    {
+        $siteId = request()->header('X-Site-Id');
+
+        if ($siteId) {
+            return $siteId;
+        }
+
+        $host = request()->getHost();
+        $site = Site::where('url', 'LIKE', '%' . $host . '%')->first();
+
+        return $site?->id ?? Site::value('id');
+    }
+
+    private static function assignSiteIdOnCreate($model): void
+    {
+        if (empty($model->site_id) && app(SiteContext::class)->has()) {
+            $model->site_id = app(SiteContext::class)->site()?->id;
+        }
     }
 
     /**
@@ -88,8 +112,8 @@ trait SiteContextedModelTrait
 
         return $query->where(function (Builder $q) use ($table, $siteId) {
 
-            $q->where($table . '.site_id', $siteId)
-                ->orWhereNull($table . '.site_id');
+            $q->where($table . self::SITE_ID_COLUMN_SUFFIX, $siteId)
+                ->orWhereNull($table . self::SITE_ID_COLUMN_SUFFIX);
         });
     }
 }

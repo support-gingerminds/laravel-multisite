@@ -9,18 +9,21 @@ class SiteContextResolver
 {
     public function resolve(Request $request): ?Site
     {
+        $siteId = $this->resolveSiteId($request);
+
+        if ($siteId) {
+            return Site::find((int) $siteId);
+        }
+
+        return Site::where('url', 'LIKE', '%' . $request->getHost() . '%')->first() ?? Site::first();
+    }
+
+    private function resolveSiteId(Request $request): mixed
+    {
         if ($request->hasSession() && ($siteId = $request->session()->get('admin_site_id'))) {
-            return Site::find((int) $siteId);
+            return $siteId;
         }
 
-        if ($siteId = $request->header('X-Site-Id')) {
-            return Site::find((int) $siteId);
-        }
-
-        if ($site = Site::where('url', 'LIKE', '%' . $request->getHost() . '%')->first()) {
-            return $site;
-        }
-
-        return Site::first();
+        return $request->header('X-Site-Id');
     }
 }
