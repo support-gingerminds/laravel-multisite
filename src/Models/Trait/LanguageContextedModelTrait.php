@@ -110,34 +110,49 @@ trait LanguageContextedModelTrait
      */
     protected function resolveCurrentLanguageId(): ?int
     {
-        if (app()->bound(LanguageContext::class)) {
-            $id = app(LanguageContext::class)->current()?->id;
-            if ($id !== null) {
-                return (int) $id;
-            }
+        $contextId = $this->resolveCurrentLanguageIdFromContext();
+
+        if ($contextId !== null) {
+            return $contextId;
         }
 
         try {
-            $header = request()->header('Accept-Language');
-
-            if (!$header) {
-                return null;
-            }
-
-            $requestedLocales = collect(explode(',', $header))
-                ->map(fn ($locale) => trim(explode(';', $locale)[0]))
-                ->map(fn ($locale) => strtolower(explode('-', $locale)[0]))
-                ->filter();
-
-            if ($requestedLocales->isEmpty()) {
-                return null;
-            }
-
-            return Language::query()
-                ->whereIn('iso', $requestedLocales->all())
-                ->value('id');
+            return $this->resolveCurrentLanguageIdFromHeader();
         } catch (Throwable) {
             return null;
         }
+    }
+
+    private function resolveCurrentLanguageIdFromContext(): ?int
+    {
+        if (!app()->bound(LanguageContext::class)) {
+            return null;
+        }
+
+        $id = app(LanguageContext::class)->current()?->id;
+
+        return $id !== null ? (int) $id : null;
+    }
+
+    private function resolveCurrentLanguageIdFromHeader(): ?int
+    {
+        $header = request()->header('Accept-Language');
+
+        if (!$header) {
+            return null;
+        }
+
+        $requestedLocales = collect(explode(',', $header))
+            ->map(fn ($locale) => trim(explode(';', $locale)[0]))
+            ->map(fn ($locale) => strtolower(explode('-', $locale)[0]))
+            ->filter();
+
+        if ($requestedLocales->isEmpty()) {
+            return null;
+        }
+
+        return Language::query()
+            ->whereIn('iso', $requestedLocales->all())
+            ->value('id');
     }
 }
