@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Collection;
 use Throwable;
 
 trait TranslatableModelTrait
@@ -45,42 +46,38 @@ trait TranslatableModelTrait
             $this->getTranslationForeignKey()
         );
 
-        if (!app()->bound(LanguageContext::class)) {
-            $ids = $this->resolveLanguageIdsFromHeader();
-            if ($ids !== []) {
-                return $relation
-                    ->whereIn('language_id', $ids)
-                    ->orderByRaw($this->buildCaseOrderSql($ids));
-            }
-
-            return $relation;
-        }
-
-        $context = app(LanguageContext::class);
-
-        $currentId  = $context->current()?->id;
-        $fallbackId = $context->fallback()?->id;
-
-        $ids = array_values(array_filter([
-            $currentId,
-            $fallbackId,
-        ]));
+        $ids = $this->resolveCurrentTranslationLanguageIds();
 
         if ($ids === []) {
-            // Try to resolve from Accept-Language header as a safe fallback
-            $ids = $this->resolveLanguageIdsFromHeader();
-            if ($ids !== []) {
-                return $relation
-                    ->whereIn('language_id', $ids)
-                    ->orderByRaw($this->buildCaseOrderSql($ids));
-            }
-
             return $relation;
         }
 
         return $relation
             ->whereIn('language_id', $ids)
             ->orderByRaw($this->buildCaseOrderSql($ids));
+    }
+
+    /**
+     * Language ids to try for the current translation, best match first:
+     * the bound context's current/fallback languages, or (if unbound, or
+     * neither is set) the Accept-Language header as a safe fallback.
+     *
+     * @return array<int>
+     */
+    private function resolveCurrentTranslationLanguageIds(): array
+    {
+        if (!app()->bound(LanguageContext::class)) {
+            return $this->resolveLanguageIdsFromHeader();
+        }
+
+        $context = app(LanguageContext::class);
+
+        $ids = array_values(array_filter([
+            $context->current()?->id,
+            $context->fallback()?->id,
+        ]));
+
+        return $ids !== [] ? $ids : $this->resolveLanguageIdsFromHeader();
     }
 
     /**
@@ -91,11 +88,7 @@ trait TranslatableModelTrait
      */
     protected function resolveLanguageIdsFromHeader(): array
     {
-        try {
-            $header = request()->header('Accept-Language');
-        } catch (Throwable) {
-            $header = null;
-        }
+        $header = $this->safeAcceptLanguageHeader();
 
         if (!$header) {
             return [];
@@ -111,7 +104,26 @@ trait TranslatableModelTrait
             return [];
         }
 
-        // Map requested locales to existing language ids, preserving order
+        return $this->mapLocalesToLanguageIds($requestedLocales);
+    }
+
+    private function safeAcceptLanguageHeader(): ?string
+    {
+        try {
+            return request()->header('Accept-Language');
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * Map requested locales to existing language ids, preserving order.
+     *
+     * @param Collection<int, string> $requestedLocales
+     * @return array<int>
+     */
+    private function mapLocalesToLanguageIds(Collection $requestedLocales): array
+    {
         try {
             $languages = Language::query()
                 ->whereIn('iso', $requestedLocales->all())
@@ -125,7 +137,7 @@ trait TranslatableModelTrait
         foreach ($requestedLocales as $iso) {
             $lang = $languages->get($iso);
             if ($lang) {
-                $ids[] = (int)$lang->id;
+                $ids[] = (int) $lang->id;
             }
         }
 
@@ -170,16 +182,16 @@ trait TranslatableModelTrait
             return $translation;
         }
 
-        if (!$fallback) {
-            return null;
-        }
+        return $fallback ? $this->resolveFallbackTranslation() : null;
+    }
 
+    private function resolveFallbackTranslation(): ?Model
+    {
         if (!app()->bound(LanguageContext::class)) {
             return null;
         }
 
-        $fallbackId = app(LanguageContext::class)
-            ->fallback()?->id;
+        $fallbackId = app(LanguageContext::class)->fallback()?->id;
 
         if (!$fallbackId) {
             return null;
