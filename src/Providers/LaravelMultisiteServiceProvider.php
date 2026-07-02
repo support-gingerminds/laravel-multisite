@@ -134,5 +134,10 @@ class LaravelMultisiteServiceProvider extends ServiceProvider
             __DIR__ . '/../../resources/lang',
             'gingerminds-multisite'
         );
+
+        // Publication de la config
+        $this->publishes([
+            __DIR__ . '/../../config/gingerminds-multisite.php' => config_path('gingerminds-multisite.php'),
+        ], 'gingerminds-multisite-config');
     }
 }
